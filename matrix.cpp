@@ -1,8 +1,8 @@
-#include "Grafo.h"
+#include "graph.h"
 
 using namespace std;
 
-Matriz::Matriz(string path, string algorithm, int selectedVertice, int targetVertice){
+Matrix::Matrix(string path, string algorithm, int selectedVertice, int targetVertice){
 	ifstream rfile;
     rfile.open(path);
     if (!rfile){
@@ -13,7 +13,7 @@ Matriz::Matriz(string path, string algorithm, int selectedVertice, int targetVer
     rfile >> vertices;        
     this->construtor();       
     edges = 0; 
-    Grafo::vector_grau = new int[vertices + 1](); 
+    Graph::vector_degree = new int[vertices + 1](); 
     string s;
     while (getline(rfile, s)){
       if (s.empty() == false){
@@ -26,8 +26,8 @@ Matriz::Matriz(string path, string algorithm, int selectedVertice, int targetVer
     }
     
     visited = new int[vertices + 1](); 
-    Grafo::mergeSort(Grafo::vector_grau, 1, vertices);
-    Grafo::Infos();
+    Graph::mergeSort(Graph::vector_degree, 1, vertices);
+    Graph::Infos();
 
      FComponentes_conexas();
     
@@ -61,40 +61,40 @@ Matriz::Matriz(string path, string algorithm, int selectedVertice, int targetVer
     visited = new int[vertices + 1]();
     
     if (algorithm == "BFS"){
-        BFS_Matriz(selectedVertice);
+        BFS_Matrix(selectedVertice);
     }
     if (algorithm == "DFS"){
-        DFS_matriz(selectedVertice);
+        DFS_Matrix(selectedVertice);
     }
     if (algorithm == "diameter"){
       Diameter();
     }
 }
 
-void Matriz::addAresta(int linha, int coluna){
-    matriz[linha][coluna] = true;
+void Matrix::addAresta(int linha, int coluna){
+    matrix[linha][coluna] = true;
     edges++;
-    Grafo::vector_grau[linha]++;
+    Graph::vector_degree[linha]++;
     return;
 }
 
-void Matriz::construtor(){
-    matriz = new bool*[vertices + 1];
+void Matrix::construtor(){
+    matrix = new bool*[vertices + 1];
     for (int i = 0; i < vertices + 1; ++i)
-        matriz[i] = new bool[vertices];
+        matrix[i] = new bool[vertices];
     for (int i = 0; i <= vertices; ++i)
         for (int j = 0; j <= vertices; ++j)
-            matriz[i][j] = false;
+            matrix[i][j] = false;
     return;
 }
 
-Matriz::~Matriz(){
+Matrix::~Matrix(){
     for (int i = 0; i <= vertices; ++i)
-       delete[]matriz[i];
-    delete[]matriz;
+       delete[]matrix[i];
+    delete[]matrix;
 }
 
-void Matriz::BFS_Matriz(int s){
+void Matrix::BFS_Matrix(int s){
     while (!fqueue.empty()){
         fqueue.pop();
     }
@@ -118,7 +118,7 @@ void Matriz::BFS_Matriz(int s){
       m_tamanho_da_componente_conexa++;
 
       for (int w = 1; w <= vertices; w++){
-        if (matriz[v->vertice][w] == true)
+        if (matrix[v->vertice][w] == true)
           if (visited[w] == 0){
             visited[w] = 1;
             visitedInThisExecution[w] = 1;
@@ -134,7 +134,7 @@ void Matriz::BFS_Matriz(int s){
     }
 }
 
-void Matriz::DFS_matriz(int s){
+void Matrix::DFS_Matrix(int s){
     while (!pstack.empty()){
         pstack.pop();
     }
@@ -157,7 +157,7 @@ void Matriz::DFS_matriz(int s){
             else myDFSFile << "--- Pai: x " << endl;
             visited[u->vertice] = 1;
             for (int w = 1; w <= vertices; w++){
-                if (matriz[u->vertice][w] == true){
+                if (matrix[u->vertice][w] == true){
                     Tree* x = this->Parentesco(u, w);
                     pstack.push(x);
                 }
@@ -167,7 +167,7 @@ void Matriz::DFS_matriz(int s){
     return;
 }
 
-Tree* Matriz::Parentesco(Tree* v, int w){
+Tree* Matrix::Parentesco(Tree* v, int w){
     Tree* filho = new Tree;
     filho->vertice = w;
     int nivel_pai = v->nivel;
@@ -176,7 +176,7 @@ Tree* Matriz::Parentesco(Tree* v, int w){
     return filho;
 }
 
-void Matriz::FComponentes_conexas(){
+void Matrix::FComponentes_conexas(){
   visitedInThisExecution = new int[vertices + 1];
   m_nodes_componentes_conexas = new int*[vertices + 1];
   m_tamanho_das_componentes_conexas = new int[vertices + 1];
@@ -185,7 +185,7 @@ void Matriz::FComponentes_conexas(){
     if (visited[i] == 0){
       m_numero_de_componentes_conexas++;
       m_tamanho_da_componente_conexa = 0;
-      BFS_Matriz(i);
+      BFS_Matrix(i);
       m_tamanho_das_componentes_conexas[m_i] = m_tamanho_da_componente_conexa;
       m_nodes_componentes_conexas[m_i] = visitedInThisExecution;
       visitedInThisExecution = new int[vertices + 1];
@@ -196,10 +196,10 @@ void Matriz::FComponentes_conexas(){
   return;
 }
 
-void Matriz::Diameter(){
+void Matrix::Diameter(){
   maxLevel = 0;
   for (int i = 1; i <= vertices; i++){
-    BFS_Matriz(i);
+    BFS_Matrix(i);
   }
 	cout << maxLevel;
 	cout << "\n";
