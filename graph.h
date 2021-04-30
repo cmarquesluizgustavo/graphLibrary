@@ -82,8 +82,8 @@ using namespace std::chrono;
 class Matrix :
 	public Graph{
 		public:
-			Matrix(string path, string algorithm, int selectedVertice, int targetVertice);
-			~Matrix();
+		    Matrix(string path, string algorithm, int selectedVertice, int targetVertice);
+		    ~Matrix();
 		
 		private:
 		    void construtor();
@@ -95,17 +95,17 @@ class Matrix :
 		    int *visited;
 		    void BFS_Matrix(int s);
 		    void DFS_Matrix(int s);
-		    void Diameter();
+				void Diameter();
 
 		    Tree * Parentesco(Tree * v, int w);
-    		    int m_tamanho_da_componente_conexa;
-    		    int m_numero_de_componentes_conexas = 0;
-    		    int* m_componentes_conexos;
-    		    int m_x;
-    		    int m_maior_tamanho = 0;
-    		    bool etapa;
-    		    int m_i;
-                    void FComponentes_conexas();
+    		int m_tamanho_da_componente_conexa;
+    		int m_numero_de_componentes_conexas = 0;
+    		int* m_componentes_conexos;
+    		int m_x;
+    		int m_maior_tamanho = 0;
+    		bool etapa;
+    		int m_i;
+        void FComponentes_conexas();
 		    std::chrono::time_point<std::chrono::system_clock> start, end;  
 	};
 #endif /* Matrix_hp */
