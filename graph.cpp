@@ -1,8 +1,8 @@
-#include "Grafo.h"
-Grafo::Grafo(){}
-Grafo::~Grafo(){}
+#include "graph.h"
+Graph::Graph(){}
+Graph::~Graph(){}
 
-void Grafo::merge(int arr[], int first, int m, int last){
+void Graph::merge(int arr[], int first, int m, int last){
     int i, j, k;
     int size_1 = 1+ m-first;
     int size_2 = last-m;
@@ -20,7 +20,8 @@ void Grafo::merge(int arr[], int first, int m, int last){
         if (L[i] <= R[j]){
             arr[k]=L[i];
             i++;
-        }else{
+        }
+		else{
           arr[k]=R[j];
           j++;}
         k++;}
@@ -33,7 +34,7 @@ void Grafo::merge(int arr[], int first, int m, int last){
       j++;
       k++;}
 }
-void Grafo::mergeSort(int arr[], int left, int right){
+void Graph::mergeSort(int arr[], int left, int right){
     if (left < right){
         int m = left + (right-left)/2;
         mergeSort(arr, left, m);
@@ -42,21 +43,22 @@ void Grafo::mergeSort(int arr[], int left, int right){
 }
 
 
-void Grafo::Infos(){
+
+void Graph::Infos(){
 	gmax = 0;
 	gmin = 2147483647;
 	for (int i = 1; i <= vertices; i++){
-		if (vector_grau[i] > gmax){
-			gmax = vector_grau[i];
+		if (vector_degree[i] > gmax){
+			gmax = vector_degree[i];
 		}
-		if (vector_grau[i] < gmin){
-			  gmin = vector_grau[i];};
+		if (vector_degree[i] < gmin){
+			  gmin = vector_degree[i];};
 		}
     if (vertices %2 != 0){
-        gmed = vector_grau[vertices/2];
+        gmed = vector_degree[vertices/2];
     }
 	else{
-      gmed = (vector_grau[vertices/2]+vector_grau[1+ vertices/2])/2;}
+      gmed = (vector_degree[vertices/2]+vector_degree[1+ vertices/2])/2;}
     edges = edges/2;  
     return;
 }
