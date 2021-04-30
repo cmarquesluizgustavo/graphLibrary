@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include "Grafo.h"
+#include "graph.h"
 using namespace std;
 
 
@@ -18,10 +18,10 @@ int main(int argc, const char** argv){
 		targetVertice = atoi(temp_targetVertice.c_str());
 	}
   if (representation == "matrix"){
-  	Matriz Matriz_de_adjacencia = Matriz(filePath, algorithm, selectedVertice, targetVertice);
+  	Matrix Adjacency_Matrix = Matrix(filePath, algorithm, selectedVertice, targetVertice);
 	}
   else if (representation == "list"){
-  	Lista Lista_de_Adjacencia = Lista(filePath, algorithm, selectedVertice, targetVertice);
+  	List Adjacency_List = List(filePath, algorithm, selectedVertice, targetVertice);
   }
 	else{
   	cout << "Formato inválido.";
