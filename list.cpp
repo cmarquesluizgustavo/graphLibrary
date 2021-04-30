@@ -1,8 +1,8 @@
-#include "Grafo.h"
+#include "graph.h"
 using namespace std;
 
 
-Lista::Lista(string path, string algorithm, int selectedVertice, int targetVertice){
+List::List(string path, string algorithm, int selectedVertice, int targetVertice){
     ifstream rfile;
     rfile.open(path);
     if (!rfile){
@@ -10,7 +10,7 @@ Lista::Lista(string path, string algorithm, int selectedVertice, int targetVerti
       return;
     }
     rfile >> vertices;
-    m_pLista = new ListNode*[vertices + 1]();
+    m_pList = new ListNode*[vertices + 1]();
 
     edges = 0;
     
@@ -27,11 +27,11 @@ Lista::Lista(string path, string algorithm, int selectedVertice, int targetVerti
             }
         }
     }
-    Grafo::vector_grau = new int[vertices + 1]();
-    this->Grau();
-    Grafo::mergeSort(Grafo::vector_grau, 1, vertices);
+    Graph::vector_degree = new int[vertices + 1]();
+    this->Degree();
+    Graph::mergeSort(Graph::vector_degree, 1, vertices);
 	
-  Grafo::Infos();
+  Graph::Infos();
     visited = new int[vertices + 1](); 
     
     FComponentes_conexas();
@@ -52,9 +52,7 @@ Lista::Lista(string path, string algorithm, int selectedVertice, int targetVerti
         << endl << "Vetores dessa componente conexa: ";
 
       for (int j = 1; j <= vertices + 1; j++){
-        if (m_nodes_componentes_conexas[i][j] == 1){
-          myInfoFile << j << ", ";
-        }
+        if (m_nodes_componentes_conexas[i][j] == 1) myInfoFile << j << ", ";
       }
       myInfoFile << "\n\n";
     }
@@ -65,60 +63,54 @@ Lista::Lista(string path, string algorithm, int selectedVertice, int targetVerti
 
     cout << "Arquivo salvo em " << m_savePath << "/info.txt" << endl;
 
-    if (algorithm == "BFS"){
-      BFS_lista(selectedVertice);
-	  }
-    if (algorithm == "DFS"){
-      DFS_lista(selectedVertice);
-	  }
-    if (algorithm == "diameter"){
-      Diameter();
-    }
-	if (algorithm == "distance"){
-		BFS_lista(selectedVertice, targetVertice);
-	}
+    if (algorithm == "BFS") BFS_list(selectedVertice);
+	  
+    if (algorithm == "DFS") DFS_list(selectedVertice);
+	
+    if (algorithm == "diameter") Diameter();
+
+	if (algorithm == "distance") BFS_list(selectedVertice, targetVertice);
 }
 
-void Lista::addAresta(int de, int para){
+void List::addAresta(int de, int para){
   ListNode* no = new ListNode;
   no->vertice = para;
-  if (m_pLista[de] != NULL){
-    m_pLista[de]->pPrev = no;
+  if (m_pList[de] != NULL){
+    m_pList[de]->pPrev = no;
   }
-  no->pNext = m_pLista[de];
+  no->pNext = m_pList[de];
   no->pPrev = NULL;
-  no->peso = 1;
-  this->m_pLista[de] = no;
+  this->m_pList[de] = no;
   edges++;
 }
 
-void Lista::Grau(){
-  int grau = 0;
+void List::Degree(){
+  int degree = 0;
   ListNode* temp;
   for (int i = 1; i <= vertices; i++){
-    for (ListNode* neigh = m_pLista[i]; neigh != NULL;){
+    for (ListNode* neigh = m_pList[i]; neigh != NULL;){
       temp = neigh;
       neigh = neigh->pNext;
-      grau++;
+      degree++;
     }
-    Grafo::vector_grau[i] = grau;
-    grau = 0;
+    Graph::vector_degree[i] = degree;
+    degree = 0;
   }
   return;
 }
 
-Lista::~Lista(){
+List::~List(){
     ListNode* temp;
     for (int i = 1; i <= vertices; i++){
-        for (ListNode* neigh = m_pLista[i]; neigh != NULL;){
+        for (ListNode* neigh = m_pList[i]; neigh != NULL;){
             temp = neigh;
             neigh = neigh->pNext;
             delete temp;}
     }
-    delete[] m_pLista;
+    delete[] m_pList;
 }
 
-void Lista::BFS_lista(int s, int targetVertice){
+void List::BFS_list(int s, int targetVertice){
     while (!fqueue.empty()){
       fqueue.pop();
     }
@@ -142,7 +134,7 @@ void Lista::BFS_lista(int s, int targetVertice){
         m_tamanho_da_componente_conexa++;
 
         int w;
-        for (ListNode* neigh = m_pLista[v->vertice]; neigh != NULL;){
+        for (ListNode* neigh = m_pList[v->vertice]; neigh != NULL;){
             w = neigh->vertice;
             neigh = neigh->pNext;
             if (visited[w] == 0){
@@ -166,7 +158,7 @@ void Lista::BFS_lista(int s, int targetVertice){
     return;
 }
 
-void Lista::DFS_lista(int s){
+void List::DFS_list(int s){
 	while (!pstack.empty()){
         pstack.pop();}
     Tree* raiz = new Tree;
@@ -185,7 +177,7 @@ void Lista::DFS_lista(int s){
             if (!(u == raiz)) myDFSFile << "--- Pai: " << u->pai->vertice << endl;
             else myDFSFile << "--- Pai: x " << endl;
             visited[u->vertice] = 1;
-            for (ListNode* neigh = m_pLista[u->vertice]; neigh != NULL;){
+            for (ListNode* neigh = m_pList[u->vertice]; neigh != NULL;){
                 int v;
                 v = neigh->vertice;
                 neigh = neigh->pNext;
@@ -196,7 +188,7 @@ void Lista::DFS_lista(int s){
     return;
 }
 
-Tree* Lista::Parentesco(Tree* v, int w){
+Tree* List::Parentesco(Tree* v, int w){
   Tree* filho = new Tree;
   filho->vertice = w;
   int nivel_pai = v->nivel;
@@ -205,7 +197,7 @@ Tree* Lista::Parentesco(Tree* v, int w){
   return filho;
 }
 
-void Lista::FComponentes_conexas(){
+void List::FComponentes_conexas(){
   m_componentes_conexos = new int[vertices + 1];
   visitedInThisExecution = new int[vertices + 1];
   m_nodes_componentes_conexas = new int*[vertices + 1];
@@ -215,7 +207,7 @@ void Lista::FComponentes_conexas(){
     if (visited[i] == 0){
       m_numero_de_componentes_conexas++;
       m_tamanho_da_componente_conexa = 0;
-      BFS_lista(i);
+      BFS_list(i);
       m_tamanho_das_componentes_conexas[m_i] = m_tamanho_da_componente_conexa;
       m_componentes_conexos[i] = m_tamanho_da_componente_conexa;
       m_nodes_componentes_conexas[m_i] = visitedInThisExecution;
@@ -227,12 +219,11 @@ void Lista::FComponentes_conexas(){
   return;
 }
 
-void Lista::Diameter(){
+void List::Diameter(){
   maxLevel = 0;
   for (int i = 1; i <= vertices; i++){
-    BFS_lista(i);
+    BFS_list(i);
   }
-	cout << maxLevel;
-	cout << "\n";
+	cout << maxLevel << endl;
   return;
 }
