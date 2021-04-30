@@ -9,3 +9,15 @@ Breadth-first search (BFS) - requires selected vertices to start the search
 Depth-first search (DFS) - requires selected vertices to start the search
 Diameter (diameter)
 Distance (distance) - requires two vertices to have the distance measured
+
+Examples:
+
+// BFS using adjacency list, root -> node 1
+
+./main graph_file.txt list BFS 1
+
+=================================
+
+// Distance between nodes 1 and 2:
+
+./main graph_file.txt x distance 1 2
