@@ -41,6 +41,7 @@ protected:
 
 struct ListNode{
     int vertice;
+    float peso;
     ListNode* pPrev;
     ListNode* pNext;
 };
@@ -54,12 +55,21 @@ class List :
     			stack<Tree*> pstack; //pilha p DFS
     			queue<Tree*> fqueue;   //fila p BFS
     			int *visited;   //vetor de marcação
-    			void addAresta(int de, int para);   
+    			void addAresta(int de, int para, float peso=1);   
     			ListNode** m_pList;
     			void Degree();
     			void BFS_list(int s, int targetVertice = 0);
     			void DFS_list(int s);
-				  void Diameter();
+				void Diameter();
+				float excentricidade;
+				void Dijkstra(int s, int targetVertice = 0);
+                void Excentricidade(int s);
+				float* dijkstra_distancia;
+				int* dijkstra_pai;
+    			int* dijkstraConjuntoS;
+				float* mstDistancia;
+    			int* mstPai;
+    			int* mstConjuntoS;
     			int m_tamanho_da_componente_conexa;
     			int m_numero_de_componentes_conexas = 0;
     			int* m_componentes_conexos;
@@ -69,6 +79,7 @@ class List :
     			int m_i;
     			Tree* Parentesco(Tree* v, int w);
     			void FComponentes_conexas();
+				void MST (int s);
     			std::chrono::time_point<std::chrono::system_clock> start, 	end;
 };
 
@@ -95,8 +106,7 @@ class Matrix :
 		    int *visited;
 		    void BFS_Matrix(int s);
 		    void DFS_Matrix(int s);
-				void Diameter();
-
+			void Diameter();
 		    Tree * Parentesco(Tree * v, int w);
     		int m_tamanho_da_componente_conexa;
     		int m_numero_de_componentes_conexas = 0;
@@ -109,3 +119,57 @@ class Matrix :
 		    std::chrono::time_point<std::chrono::system_clock> start, end;  
 	};
 #endif /* Matrix_hp */
+
+#ifndef Heap_h
+#define Heap_h
+
+struct node {
+private:
+    node* prev;
+    node* next;
+    node* child;
+    node* parent;
+    int degree;
+    bool marked;
+    
+public:
+    float Value;
+    int Vertice;
+    friend class Heap;
+    node* getPrev() { return prev; }
+    node* getNext() { return next; }
+    node* getChild() { return child; }
+    node* getParent() { return parent; }
+    int getValue() { return Value; }
+    bool isMarked() { return marked; }
+    bool hasChildren() { return child; }
+    bool hasParent() { return parent; }
+};
+
+class Heap
+{
+protected:
+    node* heap;
+public:
+    Heap();
+    virtual ~Heap();
+    node* insert(float value,int vertice);
+    void merge(Heap& other);
+    bool isEmpty();
+    node* getMinimum();
+    int removeMinimum();
+    node* decreaseKey(node* n, float value);
+    node* find(float value);
+private:
+    node * _empty();
+    node* _singleton(float value, int vertice);
+    node* _merge(node* a, node* b);
+    void _deleteAll(node* n);
+    void _addChild(node* parent, node* child);
+    void _unMarkAndUnParentAll(node* n);
+    node* _removeMinimum(node* n);
+    node* _cut(node* heap, node* n);
+    node* _decreaseKey(node* heap, node* n, float value);
+    node* _find(node* heap, float value);
+};
+#endif /* Heap_h */
