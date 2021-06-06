@@ -10,6 +10,8 @@ Depth-first search (DFS) - requires selected vertices to start the search
 Diameter (diameter)
 Distance (distance) - requires two vertices to have the distance measured
 
+This library can manipulate weighted graphs. It has the dijkstra algorithm for minimum path implemented, as well a mst (minimum spanning tree) and eccentricity. The library detects if the input graph has weights automatically, but only handles it with list, not matrix.
+  
 Examples:
 
 // BFS using adjacency list, root -> node 1
