@@ -1,4 +1,5 @@
 #include "graph.h"
+#include <string>
 using namespace std;
 
 
@@ -16,22 +17,35 @@ List::List(string path, string algorithm, int selectedVertice, int targetVertice
     
     string s;
 
+	bool Weight = false;
+
     while (getline(rfile, s)){
-        if (!s.empty()){
-            istringstream tmp(s);
-            int v1, v2;
-            tmp >> v1 >> v2;
-            if (v1<= vertices && v2 <= vertices){
-                this->addAresta(v1, v2);
-                this->addAresta(v2, v1);
-            }
+      if (!s.empty()){
+        istringstream tmp(s);
+        int v1, v2;
+        float peso;
+        tmp >> v1 >> v2 >> peso;
+
+		if (v1 <= vertices && v2 <= vertices){
+			if (peso > 0.00001){
+            this->addAresta(v1, v2, peso);
+            this->addAresta(v2, v1, peso);
+			    Weight = true;
+			    //cout << peso << "\n";
+			}
+			else if (peso < 1e-20 && peso > 1e-43){
+          this->addAresta(v1, v2);
+          this->addAresta(v2, v1);
+			  //cout << v1 << v2;
+			}
         }
+      }
     }
     Graph::vector_degree = new int[vertices + 1]();
     this->Degree();
     Graph::mergeSort(Graph::vector_degree, 1, vertices);
 	
-  Graph::Infos();
+    Graph::Infos();
     visited = new int[vertices + 1](); 
     
     FComponentes_conexas();
@@ -62,17 +76,31 @@ List::List(string path, string algorithm, int selectedVertice, int targetVertice
     visited = new int[vertices + 1](); 
 
     cout << "Arquivo salvo em " << m_savePath << "/info.txt" << endl;
+	
 
     if (algorithm == "BFS") BFS_list(selectedVertice);
+
 	  
     if (algorithm == "DFS") DFS_list(selectedVertice);
 	
     if (algorithm == "diameter") Diameter();
 
-	if (algorithm == "distance") BFS_list(selectedVertice, targetVertice);
+	//cout << algorithm << Weight;
+
+	if (algorithm == "distance"){
+		if (Weight) Dijkstra(selectedVertice, targetVertice);
+		else BFS_list(selectedVertice, targetVertice);
+	}
+
+	if (algorithm == "dijkstra") Dijkstra(selectedVertice);
+
+	if (algorithm == "eccentricity") Excentricidade(selectedVertice);
+
+	if (algorithm == "mst") MST(selectedVertice);
+
 }
 
-void List::addAresta(int de, int para){
+void List::addAresta(int de, int para, float peso){
   ListNode* no = new ListNode;
   no->vertice = para;
   if (m_pList[de] != NULL){
@@ -80,6 +108,7 @@ void List::addAresta(int de, int para){
   }
   no->pNext = m_pList[de];
   no->pPrev = NULL;
+  no->peso = peso;
   this->m_pList[de] = no;
   edges++;
 }
@@ -111,9 +140,6 @@ List::~List(){
 }
 
 void List::BFS_list(int s, int targetVertice){
-    while (!fqueue.empty()){
-      fqueue.pop();
-    }
 
     Tree* raiz = new Tree;
     raiz->vertice = s;
@@ -123,7 +149,6 @@ void List::BFS_list(int s, int targetVertice){
     ofstream myBFSFile;
     myBFSFile.open(m_savePath + "/lista_BFS.txt");
     myBFSFile << "Vertice: " << raiz->vertice << " --- Nivel: " << raiz->nivel << " --- Pai: x " << endl;
-    
     visited[s] = 1;
     visitedInThisExecution[s] = 1;
     fqueue.push(raiz);
@@ -226,4 +251,149 @@ void List::Diameter(){
   }
 	cout << maxLevel << endl;
   return;
+}
+
+
+void List::Dijkstra(int s, int targetVertice){
+    Heap Dijkstra_heap;
+    dijkstra_distancia = new float[vertices + 1]();
+    dijkstra_pai = new int[vertices + 1]();
+    dijkstraConjuntoS = new int[vertices + 1]();
+    node **find = new node*[vertices + 1]();
+    float infinito = std::numeric_limits<float>::max();
+    
+    //inicializa vetor de distancias com todas celulas infinitas, menos para o vertice inicial que é 0
+    for (int i = 1; i <= vertices; i++){
+        if (i != s) dijkstra_distancia[i] = infinito;
+        else Dijkstra_heap.insert(0, s);
+    }
+    
+    while (Dijkstra_heap.isEmpty() == false){
+        node* v = Dijkstra_heap.getMinimum();
+        int vertice = v->Vertice;
+        dijkstraConjuntoS[vertice] = 1;
+        Dijkstra_heap.removeMinimum();
+
+        for (ListNode* w = m_pList[vertice]; w != NULL;){
+            if ((dijkstra_distancia[w->vertice] > dijkstra_distancia[vertice] + w->peso) && (dijkstraConjuntoS[w->vertice] == 0)){
+                if ((dijkstra_distancia[w->vertice] = !infinito)){
+                    find[w->vertice] = Dijkstra_heap.decreaseKey(find[w->vertice], dijkstra_distancia[vertice] + w->peso);
+                    dijkstra_distancia[w->vertice] = dijkstra_distancia[vertice] + w->peso;
+                    dijkstra_pai[w->vertice] = vertice;
+                }
+
+                else{
+                    find[w->vertice]=Dijkstra_heap.insert(dijkstra_distancia[vertice] + w->peso, w->vertice);
+                    dijkstra_distancia[w->vertice] = dijkstra_distancia[vertice] + w->peso;
+                    dijkstra_pai[w->vertice] = vertice;
+                }
+            }
+            w = w->pNext;
+        }
+    }
+	
+    ofstream myDijkstraFile;
+    myDijkstraFile.open(m_savePath + "/lista_Dijskstra.txt");
+    for (int i = 1; i <= vertices; i++){
+        myDijkstraFile << "Vertice: " << i << ", Distancia: " << dijkstra_distancia[i] << ", Caminho: " << i <<", ";
+        int x = i;
+        while (dijkstra_pai[x] != 0){
+            myDijkstraFile << dijkstra_pai[x] << ", ";
+            x = dijkstra_pai[x];
+        }	
+        myDijkstraFile << endl;
+    }
+	if (targetVertice != 0){
+		cout << "Vértice de interesse: " << targetVertice << ", Distancia: " << dijkstra_distancia[targetVertice] << ", Caminho: " << targetVertice <<", ";
+        int x = targetVertice;
+        while (dijkstra_pai[x] != 0){
+            cout << dijkstra_pai[x] << ", ";
+            x = dijkstra_pai[x];
+        }
+		cout << "\n";
+	}
+    
+}
+
+
+void List::Excentricidade(int s){
+
+    excentricidade = 0.0;
+    List::Dijkstra(s);
+    for (int i = 1; i <= vertices; i++){
+    	if (excentricidade < dijkstra_distancia[i]) excentricidade = dijkstra_distancia[i];
+    }
+    c
+
+
+
+void List::MST(int s){
+    //high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    
+    
+    Heap MST_heap;
+    mstDistancia = new float[vertices + 1]();
+    mstPai = new int[vertices + 1]();
+    mstConjuntoS = new int[vertices + 1]();
+    
+    //define infinito
+    float infinito = std::numeric_limits<float>::max();
+    
+    node **find = new node*[vertices + 1]();
+
+
+    for (int i = 1; i <= vertices; i++){
+
+        if (i != s) mstDistancia[i] = infinito;
+        
+        else MST_heap.insert(0, s);
+    }
+    
+    while (MST_heap.isEmpty() == false){
+        node* v = MST_heap.getMinimum();  //pega valor minimo do heap
+        int vertice = v->Vertice;
+        mstConjuntoS[vertice] = 1;
+        
+        MST_heap.removeMinimum();  // remove minimo do heap
+        
+        for (ListNode* w = m_pList[vertice]; w != NULL;){
+
+            //percorre os vizinhos desse vertice tirado do heap
+            if ((mstDistancia[w->vertice] > w->peso) && (mstConjuntoS[w->vertice] == 0)){
+                //se esse vertice ainda nao foi adicionado no heap, adiciona e atualiza vetores auxiliares
+                if ((mstDistancia[w->vertice] = !infinito)){
+                    find[w->vertice] = MST_heap.decreaseKey(find[w->vertice],  w->peso);
+                    mstDistancia[w->vertice] = w->peso;
+                    mstPai[w->vertice] = vertice;
+                }
+                //se esse vertice ja foi adicionado no heap, atualiza e atualiza vetores auxiliares
+                else{
+                    find[w->vertice]=MST_heap.insert( w->peso, w->vertice);
+                    mstDistancia[w->vertice] =  w->peso;
+                    mstPai[w->vertice] = vertice;
+                }
+            }
+            w = w->pNext;
+        }
+    }
+    
+    
+    
+    //imprime arquivo de saida
+    ofstream myMSTFile;
+    myMSTFile.open(m_savePath + "/lista_MST.txt");
+    float peso_total = 0;
+    for (int i = 1; i <= vertices; i++){
+        peso_total += mstDistancia[i];
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    
+	//auto duration1 = duration_cast<microseconds>(t2 - t1).count();
+    //cout << duration1<<endl <<peso_total;
+    
+    myMSTFile << "Peso total: " << peso_total <<endl ;
+    for (int i = 1; i <= vertices; i++){
+        myMSTFile << i << "   " << mstPai[i] << endl;
+    }
+    
 }
